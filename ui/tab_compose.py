@@ -8,8 +8,11 @@ import customtkinter as ctk
 class ComposeTab:
     """封裝寄信頁籤元素，提供資料讀取與狀態控制。"""
 
-    def __init__(self, parent: ctk.CTkFrame, on_send):
+    def __init__(self, parent: ctk.CTkFrame, on_send, on_schedule_change=None):
         self.parent = parent
+        self._schedule_change_callback = on_schedule_change
+        self._suppress_schedule_event = False
+        self._active_schedule_key: str | None = None
         parent.grid_columnconfigure(1, weight=1)
         parent.grid_rowconfigure(2, weight=1)
 
@@ -62,7 +65,7 @@ class ComposeTab:
             self.schedule_frame,
             text="1. 開啟定時排程",
             variable=self.schedule_once_var,
-            command=self._on_schedule_toggle,
+            command=lambda: self._on_schedule_toggle("once"),
         )
         self.schedule_once_chk.grid(row=1, column=0, columnspan=3, sticky="w")
 
@@ -70,7 +73,7 @@ class ComposeTab:
             self.schedule_frame,
             text="2. 開啟每日排程",
             variable=self.daily_var,
-            command=self._on_schedule_toggle,
+            command=lambda: self._on_schedule_toggle("daily"),
         )
         self.daily_chk.grid(row=2, column=0, columnspan=3, sticky="w")
 
@@ -78,7 +81,7 @@ class ComposeTab:
             self.schedule_frame,
             text="3. 開啟非假日每日排程",
             variable=self.weekday_var,
-            command=self._on_schedule_toggle,
+            command=lambda: self._on_schedule_toggle("weekday"),
         )
         self.weekday_chk.grid(row=3, column=0, columnspan=3, sticky="w")
 
@@ -88,7 +91,7 @@ class ComposeTab:
         ctk.CTkLabel(self.daily_time_frame, text="每日寄送時間：").grid(row=0, column=0, padx=(0, 10))
 
         hours = [f"{h:02d}" for h in range(24)]
-        minutes = [f"{m:02d}" for m in range(0, 60, 5)]
+        minutes = [f"{m:02d}" for m in range(60)]
         self.daily_hour_var = ctk.StringVar(value="09")
         self.daily_min_var = ctk.StringVar(value="00")
 
@@ -143,10 +146,33 @@ class ComposeTab:
         }
 
     # -- 內部 -------------------------------------------------------------
-    def _on_schedule_toggle(self) -> None:
-        """顯示或隱藏每日排程時間選單。"""
+    def _on_schedule_toggle(self, key: str) -> None:
+        """確保排程選項互斥並顯示對應設定。"""
+
+        if self._suppress_schedule_event:
+            return
+
+        toggles = {
+            "once": self.schedule_once_var,
+            "daily": self.daily_var,
+            "weekday": self.weekday_var,
+        }
+        selected = toggles[key].get()
+
+        self._suppress_schedule_event = True
+        if selected:
+            for other_key, var in toggles.items():
+                if other_key != key:
+                    var.set(False)
+            self._active_schedule_key = key
+        else:
+            self._active_schedule_key = None
+        self._suppress_schedule_event = False
 
         if self.daily_var.get() or self.weekday_var.get():
             self.daily_time_frame.grid()
         else:
             self.daily_time_frame.grid_remove()
+
+        if self._schedule_change_callback:
+            self._schedule_change_callback(self._active_schedule_key)

@@ -19,7 +19,11 @@ class TabContainer:
         calendar_frame = self.tabview.add("月曆")
         self.tabview.set("寄信")
 
-        self.compose_tab = ComposeTab(compose_frame, on_send)
+        self.compose_tab = ComposeTab(
+            compose_frame,
+            on_send,
+            on_schedule_change=self._handle_schedule_mode_change,
+        )
         self.attachment_tab = AttachmentTab(attachment_frame, self._handle_attachment_change)
         self.calendar_tab = CalendarTab(calendar_frame)
 
@@ -58,3 +62,9 @@ class TabContainer:
     # -- 內部 -------------------------------------------------------------
     def _handle_attachment_change(self, count: int) -> None:
         self.compose_tab.update_attachment_summary(count)
+
+    def _handle_schedule_mode_change(self, mode: str | None) -> None:
+        """當使用者切換排程模式時，視需要重置其他頁籤的設定。"""
+
+        if mode != "once":
+            self.calendar_tab.clear_selection()

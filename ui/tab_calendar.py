@@ -157,6 +157,14 @@ class CalendarTab:
     def get_scheduled_datetime(self) -> datetime | None:
         return self.scheduled_datetime
 
+    def clear_selection(self) -> None:
+        """清除已選日期時間（供其他頁籤重置設定時使用）。"""
+
+        self.selected_date = None
+        self.scheduled_datetime = None
+        self._render_calendar()
+        self._update_selection_label()
+
     # -- 內部 -------------------------------------------------------------
     def _update_selection_label(self) -> None:
         if not self.selected_date:
