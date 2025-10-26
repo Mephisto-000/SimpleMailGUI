@@ -7,11 +7,12 @@ A simple Python desktop mail sender built with CustomTkinter and SMTP.
 
 ## Features 
 
-- Send emails via SMTP (supports STARTTLS / SSL)
-- Modern CustomTkinter GUI interface
-- `.env` configuration for secure credentials
-- Daily log file output for sent/failed records
-- Modular architecture with clear separation between `app/` and `ui/`
+- Modern CustomTkinter GUI with分頁式介面（寄信 / 附件 / 月曆）
+- SMTP 郵件寄送（支援 STARTTLS / SSL、多收件者、附件）
+- `.env` + `python-dotenv` 管理敏感設定
+- APScheduler 排程：單次排程、每日排程、非假日每日排程
+- 每日輪替的檔案日誌，記錄寄信結果與錯誤
+- 模組化結構：應用層 (`app/`) 與 UI 層 (`ui/`) 清楚分離
 
 ---
 
@@ -26,8 +27,12 @@ SimpleMailGUI/
 │   └── log_service.py       # Daily log writer
 │
 ├── ui/
-│   ├── init.py          # Exports MainWindow
-│   └── main_window.py       # CustomTkinter main GUI
+│   ├── __init__.py
+│   ├── main_window.py       # Main window + APScheduler interaction
+│   ├── tab_container.py     # TabView 管理器
+│   ├── tab_compose.py       # 寄信頁籤（含排程選項）
+│   ├── tab_attachments.py   # 附件管理頁籤
+│   └── tab_calendar.py      # 月曆頁籤（選擇單次排程時間）
 │
 ├── logs/                    # Automatically generated daily logs
 │   └── 2025-10-16.log
@@ -43,20 +48,14 @@ SimpleMailGUI/
 
 ## Setup
 
-### 1. Create Environment
+### 1. Create Environment & Install Dependencies
 
 ```bash=
 uv venv -p 3.13
 uv sync
 ```
 
-### 2. Install Dependencies
-
-```bash=
-uv add customtkinter python-dotenv
-```
-
-### 3. Create .env File
+### 2. Create .env File
 
 ```bash=
 cp .env.example .env
@@ -78,3 +77,15 @@ SMTP_PASS=your_app_password
 ```bash=
 uv run python main.py
 ```
+
+---
+
+## Scheduling Options
+
+排程開關位於「寄信」頁籤下方，一次只能啟用一種模式：
+
+1. **開啟定時排程**：搭配「月曆」頁籤選擇日期與時間，點擊 Send 後會建立單次 APScheduler 工作。
+2. **開啟每日排程**：勾選後選擇每日的 HH:MM，APS cheduler 會每天在該時間寄信。
+3. **開啟非假日每日排程**：同樣選擇 HH:MM，僅在週一至週五觸發。
+
+若沒有勾選排程，點擊 Send 會立即寄出郵件。切換到其他排程類型時，對應設定（例如月曆選擇）會自動重置，避免送出舊的排程。
