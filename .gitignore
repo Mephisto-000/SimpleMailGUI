@@ -16,6 +16,7 @@ ENV/
 # --- OS / IDE junk ---
 .DS_Store
 .idea/
+.vscode/
 
 # --- Logs / temp ---
 *.log
