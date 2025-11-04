@@ -89,3 +89,23 @@ uv run python main.py
 3. **開啟非假日每日排程**：同樣選擇 HH:MM，僅在週一至週五觸發。
 
 若沒有勾選排程，點擊 Send 會立即寄出郵件。切換到其他排程類型時，對應設定（例如月曆選擇）會自動重置，避免送出舊的排程。
+
+---
+
+## Build Executable with Nuitka
+
+專案已加入 `nuitka` 套件，可將應用程式編譯成獨立可執行檔：
+
+```bash=
+uv run python -m nuitka \
+  --follow-imports \
+  --standalone \
+  --onefile \
+  --enable-plugin=tk-inter \
+  --output-dir dist \
+  main.py
+```
+
+- `--standalone --onefile` 會產出單一可攜執行檔（Windows 會放在 `dist/main.exe`）。
+- `--enable-plugin=tk-inter` 必要，確保 CustomTkinter 所需的 Tk 元件正確打包。
+- 若要內建 `.env` 或其他資源，可再使用 `--include-data-file` / `--include-data-dir` 參數。
