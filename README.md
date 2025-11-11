@@ -98,11 +98,10 @@ uv run python main.py
 
 ```bash=
 uv run python -m nuitka \
-  --follow-imports \
-  --standalone \
-  --onefile \
+  --mode=app \
   --enable-plugin=tk-inter \
-  --output-dir dist \
+  --output-dir=dist \
+  --output-filename=SimpleMailGUI \
   main.py
 ```
 
