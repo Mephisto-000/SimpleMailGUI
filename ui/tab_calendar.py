@@ -66,10 +66,11 @@ class CalendarTab:
     def _build_time_controls(self) -> None:
         self.time_frame = ctk.CTkFrame(self.parent)
         self.time_frame.grid(row=2, column=0, padx=10, pady=(0, 15), sticky="ew")
-        self.time_frame.grid_columnconfigure(1, weight=1)
+        for col in range(6):
+            self.time_frame.grid_columnconfigure(col, weight=0)
 
         self.selection_label = ctk.CTkLabel(self.time_frame, text="尚未選擇排程時間")
-        self.selection_label.grid(row=0, column=0, columnspan=4, sticky="w")
+        self.selection_label.grid(row=0, column=0, columnspan=6, sticky="w")
 
         ctk.CTkLabel(self.time_frame, text="排程時間：").grid(row=1, column=0, pady=(8, 0), sticky="w")
 
@@ -78,13 +79,21 @@ class CalendarTab:
         self.hour_var = ctk.StringVar(value=f"{datetime.now().hour:02d}")
         self.minute_var = ctk.StringVar(value=f"{(datetime.now().minute // 5) * 5:02d}")
 
-        self.hour_menu = ctk.CTkOptionMenu(self.time_frame, values=hours, variable=self.hour_var, command=self._on_time_change)
-        self.hour_menu.grid(row=1, column=1, padx=5, pady=(8, 0))
+        self.hour_menu = ctk.CTkOptionMenu(
+            self.time_frame, values=hours, variable=self.hour_var, command=self._on_time_change
+        )
+        self.hour_menu.grid(row=1, column=1, padx=5, pady=(8, 0), sticky="w")
+        ctk.CTkLabel(self.time_frame, text="時").grid(row=1, column=2, pady=(8, 0), sticky="w")
 
-        self.minute_menu = ctk.CTkOptionMenu(self.time_frame, values=minutes, variable=self.minute_var, command=self._on_time_change)
-        self.minute_menu.grid(row=1, column=2, padx=5, pady=(8, 0))
+        self.minute_menu = ctk.CTkOptionMenu(
+            self.time_frame, values=minutes, variable=self.minute_var, command=self._on_time_change
+        )
+        self.minute_menu.grid(row=1, column=3, padx=5, pady=(8, 0), sticky="w")
+        ctk.CTkLabel(self.time_frame, text="分").grid(row=1, column=4, pady=(8, 0), sticky="w")
 
-        ctk.CTkLabel(self.time_frame, text="(24 小時制，先點擊日期再選擇時間)").grid(row=1, column=3, padx=(5, 0), pady=(8, 0), sticky="w")
+        ctk.CTkLabel(self.time_frame, text="(24 小時制，先點擊日期再選擇時間)").grid(
+            row=1, column=5, padx=(5, 0), pady=(8, 0), sticky="w"
+        )
         self._update_selection_label()
 
     # -- 互動 -------------------------------------------------------------
